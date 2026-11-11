@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ book.title }}</h1>
+
+    <p><strong>Автор:</strong> {{ book.author }}</p>
+    <p><strong>Дата издания:</strong> {{ book.published_date|date:"d.m.Y" }}</p>
+    <p><strong>Страниц:</strong> {{ book.pages }}</p>
+
+    <h3>Описание</h3>
+    <p>{{ book.description }}</p>
+
+    {% if book.available %}
+        <p style="color: green;">Книга доступна</p>
+    {% else %}
+        <p style="color: red;">Книга выдана</p>
+    {% endif %}
+
+{% endblock %}
