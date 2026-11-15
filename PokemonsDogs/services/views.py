@@ -1,23 +1,26 @@
 import requests
 from django.shortcuts import render, redirect
 
+
 POKEMON_TEAM = {}
-HEADERS = {'User-Agent': 'Mozilla/5.0'}
 POKEAPI = 'https://pokeapi.co/api/v2'
 DOG_API = 'https://dog.ceo/api'
 
 
 def get_first_20_pokemons():
+    """Выводит имена первых 20 покемонов из PokéAPI."""
     response = requests.get(f'{POKEAPI}/pokemon?limit=20',
-                            headers=HEADERS, timeout=5)
+                            timeout=5)
     if response.status_code == 200:
         return [p['name'] for p in response.json().get('results', [])]
     return []
 
 
 def fetch_pokemon_data(name):
+    """Запрашивает у PokéAPI подробные данные о покемоне: имя,
+    картинку, типы, вес, рост, способности, здоровье и силу аттаки."""
     url = f'{POKEAPI}/pokemon/{name.strip().lower()}'
-    response = requests.get(url, headers=HEADERS, timeout=5)
+    response = requests.get(url, timeout=5)
     if response.status_code != 200 or not response.text:
         return None
     data = response.json()
@@ -35,6 +38,7 @@ def fetch_pokemon_data(name):
 
 
 def pokemon_view(request):
+    """Отображает страницу менеджера команды покемонов"""
     first_20 = get_first_20_pokemons()
     message = ''
     found_pokemon = None
@@ -102,27 +106,29 @@ def pokemon_view(request):
 
 
 def remove_pokemon(request, pokemon_name):
+    """Удаляет покемона из команды и перенаправляет на страницу команды."""
     if pokemon_name in POKEMON_TEAM:
         del POKEMON_TEAM[pokemon_name]
     return redirect('services:pokemon')
 
 
 def get_all_breeds():
+    """Получает список всех пород собак из Dog API."""
     response = requests.get(f'{DOG_API}/breeds/list/all',
-                            headers=HEADERS, timeout=5)
+                            timeout=5)
     if response.status_code == 200:
         return list(response.json().get('message', {}).keys())
     return []
 
 
 def get_breed_images(breeds_list):
+    """Получает по одному случайному изображению для каждой породы."""
     images = {}
     for breed in breeds_list:
         clean_breed = breed.strip().lower()
         if clean_breed:
             response = requests.get(
                 f'{DOG_API}/breed/{clean_breed}/images/random',
-                headers=HEADERS,
                 timeout=5
             )
             if response.status_code == 200:
@@ -131,6 +137,7 @@ def get_breed_images(breeds_list):
 
 
 def dogs_view(request):
+    """Отображает страницу с изображениями пород собак."""
     all_breeds = get_all_breeds()
     user_input = request.GET.get('breeds', '')
     images = {}
