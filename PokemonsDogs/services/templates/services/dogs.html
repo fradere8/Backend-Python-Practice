@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Собаки — Dog API{% endblock %}
+
+{% block content %}
+    <h1>Породы собак (Dog API)</h1>
+
+    <form method="get">
+        <label>Введите породы через запятую (например: african, chow, dingo):</label><br><br>
+        <input type="text" name="breeds" value="{{ user_input }}" size="40">
+        <button type="submit">Показать фото</button>
+    </form>
+
+    {% if images %}
+        <h2>Фотографии выбранных пород:</h2>
+        {% for breed, img_url in images.items %}
+            <div class="card">
+                <h3>{{ breed|title }}</h3>
+                <img src="{{ img_url }}" alt="{{ breed }}" width="300">
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    <h2>Список всех доступных пород:</h2>
+    <ol>
+        {% for breed in all_breeds %}
+            <li>{{ breed }}</li>
+        {% endfor %}
+    </ol>
+{% endblock %}

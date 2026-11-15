@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Покемоны — PokéAPI{% endblock %}
+
+{% block content %}
+    <h1>PokéAPI: Каталог и менеджер команды</h1>
+
+    {% if message %}
+        <p style="color: blue;"><strong>{{ message }}</strong></p>
+    {% endif %}
+
+    <h3>Найти покемона (характеристики)</h3>
+    <form method="get">
+        <input type="text" name="search_name" placeholder="Например: clefairy">
+        <button type="submit">Показать данные</button>
+    </form>
+
+    {% if found_pokemon %}
+        <div class="card" style="background: #f9f9f9; margin-top: 10px;">
+            <h4>{{ found_pokemon.name|title }}</h4>
+            {% if found_pokemon.image %}<img src="{{ found_pokemon.image }}" alt="{{ found_pokemon.name }}">{% endif %}
+            <p><strong>Имя:</strong> {{ found_pokemon.name }}</p>
+            <p><strong>Тип:</strong> {{ found_pokemon.types|join:", " }}</p>
+            <p><strong>Вес:</strong> {{ found_pokemon.weight }} | <strong>Рост:</strong> {{ found_pokemon.height }}</p>
+            <p><strong>Способности:</strong> {{ found_pokemon.abilities|join:", " }}</p>
+            <p><strong>Статы:</strong> HP {{ found_pokemon.hp }} | Атака {{ found_pokemon.attack }}</p>
+            <a href="?add_name={{ found_pokemon.name }}">[+ Добавить в команду]</a>
+        </div>
+    {% endif %}
+
+    <hr>
+
+    <h3>Первые 20 покемонов</h3>
+    <ol>
+        {% for name in first_20 %}
+            <li>
+                <strong>{{ name }}</strong> — 
+                <a href="?search_name={{ name }}">Инфо</a> | 
+                <a href="?add_name={{ name }}">В команду</a>
+            </li>
+        {% endfor %}
+    </ol>
+
+    <hr>
+
+    <h3>Добавить покемона в команду вручную</h3>
+    <form method="get">
+        <input type="text" name="add_name" placeholder="Например: pikachu">
+        <button type="submit">Добавить</button>
+    </form>
+
+    <h3>Тренировочный бой</h3>
+    {% if team|length >= 2 %}
+        <form method="get">
+            <label>Боец 1:</label>
+            <select name="fighter1">
+                {% for p in team %}
+                    <option value="{{ p.name }}">{{ p.name|title }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Боец 2:</label>
+            <select name="fighter2">
+                {% for p in team %}
+                    <option value="{{ p.name }}">{{ p.name|title }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Начать бой!</button>
+        </form>
+        {% if battle_result %}
+            <p style="color: green; font-size: 18px;"><strong>{{ battle_result }}</strong></p>
+        {% endif %}
+    {% else %}
+        <p>Добавьте минимум 2 покемонов в команду, чтобы провести бой.</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Ваша команда ({{ team|length }})</h2>
+    {% if team %}
+        {% for p in team %}
+            <div class="card">
+                <h3>{{ p.name|title }}</h3>
+                {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}">{% endif %}
+                <p><strong>Типы:</strong> {{ p.types|join:", " }}</p>
+                <p><strong>Вес:</strong> {{ p.weight }} | <strong>Рост:</strong> {{ p.height }}</p>
+                <p><strong>HP:</strong> {{ p.hp }} | <strong>Атака:</strong> {{ p.attack }}</p>
+                <p><strong>Способности:</strong> {{ p.abilities|join:", " }}</p>
+                <a href="{% url 'services:remove_pokemon' p.name %}" style="color: red;">Удалить из команды</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Ваша команда пока пуста.</p>
+    {% endif %}
+{% endblock %}

@@ -2,4 +2,5 @@ python -m venv venv
 source venv/Scripts/activate
 python -m pip install --upgrade pip
 django-admin startproject name_project
+python manage.py startapp name_app
 python manage.py runserver
