@@ -32,3 +32,6 @@ def book_detail(request, book_id):
         raise Http404('Книга не найдена')
 
     return render(request, 'catalog/book_detail.html', {'book': book})
+
+def book_list(request):
+    return render(request, 'catalog/book_list.html', {'books': BOOKS.values()})
