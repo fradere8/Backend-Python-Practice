@@ -1,44 +1,43 @@
 import requests
 from django.shortcuts import render, redirect
 
-
 POKEMON_TEAM = {}
+HEADERS = {'User-Agent': 'Mozilla/5.0'}
+POKEAPI = 'https://pokeapi.co/api/v2'
+DOG_API = 'https://dog.ceo/api'
 
 def get_first_20_pokemons():
-    try:
-        response = requests.get('https://pokeapi.co', timeout=5)
-        if response.status_code == 200 and response.text:
-            return [p['name'] for p in response.json().get('results', [])]
-    except (requests.RequestException, ValueError):
-        pass
+    response = requests.get(f'{POKEAPI}/pokemon?limit=20', headers=HEADERS, timeout=5)
+    if response.status_code == 200:
+        return [p['name'] for p in response.json().get('results', [])]
     return []
 
 def fetch_pokemon_data(name):
-    url = f'https://pokeapi.co{name.strip().lower()}'
-    try:
-        response = requests.get(url, timeout=5)
-        if response.status_code != 200 or not response.text:
-            return None
-        data = response.json()
-        stats = {s['stat']['name']: s['base_stat'] for s in data['stats']}
-        return {
-            'name': data['name'],
-            'image': data['sprites']['front_default'],
-            'types': [t['type']['name'] for t in data['types']],
-            'weight': data['weight'],
-            'height': data['height'],
-            'abilities': [a['ability']['name'] for a in data['abilities']],
-            'hp': stats.get('hp', 0),
-            'attack': stats.get('attack', 0),
-        }
-    except (requests.RequestException, ValueError):
+    url = f'{POKEAPI}/pokemon/{name.strip().lower()}'
+    response = requests.get(url, headers=HEADERS, timeout=5)
+    if response.status_code != 200 or not response.text:
         return None
+    data = response.json()
+    stats = {s['stat']['name']: s['base_stat'] for s in data['stats']}
+    return {
+        'name': data['name'],
+        'image': data['sprites']['front_default'],
+        'types': [t['type']['name'] for t in data['types']],
+        'weight': data['weight'],
+        'height': data['height'],
+        'abilities': [a['ability']['name'] for a in data['abilities']],
+        'hp': stats.get('hp', 0),
+        'attack': stats.get('attack', 0),
+    }
 
 def pokemon_view(request):
     first_20 = get_first_20_pokemons()
     message = ''
     found_pokemon = None
     battle_result = ''
+
+    if not first_20:
+        message = 'Не удалось загрузить список из PokéAPI. Проверьте подключение к интернету.'
 
     if 'add_name' in request.GET:
         name = request.GET.get('add_name', '').strip().lower()
@@ -98,9 +97,9 @@ def remove_pokemon(request, pokemon_name):
     return redirect('services:pokemon')
 
 def get_all_breeds():
-    response = requests.get('https://dog.ceo')
+    response = requests.get(f'{DOG_API}/breeds/list/all', headers=HEADERS, timeout=5)
     if response.status_code == 200:
-        return list(response.json()['message'].keys())
+        return list(response.json().get('message', {}).keys())
     return []
 
 def get_breed_images(breeds_list):
@@ -108,9 +107,10 @@ def get_breed_images(breeds_list):
     for breed in breeds_list:
         clean_breed = breed.strip().lower()
         if clean_breed:
-            response = requests.get(f'https://dog.ceo{clean_breed}/images/random')
+            response = requests.get(f'{DOG_API}/breed/{clean_breed}/images/random',
+                                    headers=HEADERS, timeout=5)
             if response.status_code == 200:
-                images[clean_breed] = response.json()['message']
+                images[clean_breed] = response.json().get('message')
     return images
 
 def dogs_view(request):
@@ -128,4 +128,3 @@ def dogs_view(request):
         'images': images,
         'user_input': user_input,
     })
-    
